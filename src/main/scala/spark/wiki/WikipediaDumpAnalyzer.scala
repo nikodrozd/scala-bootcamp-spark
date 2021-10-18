@@ -20,6 +20,7 @@ object WikipediaDumpAnalyzer {
     val master: String = "local[*]"
     val conf = new SparkConf().setAppName(appName).setMaster(master)
     val sc = new SparkContext(conf)
+    sc.setLogLevel("ERROR")
     sc.wholeTextFiles(s"$dumpFilesLocation/*.xml")
   }
 
@@ -67,6 +68,8 @@ object WikipediaDumpAnalyzer {
    * @return - Map[String, Int] with pairs "word" -> count
    */
   private[wiki] def getWordsHeatMap(text: String): Map[String, Int] = {
-    text.split("[^\\d\\w]+").groupBy(_.toLowerCase).map{case (word, qty) => (word, qty.length)}
+    val replaceStr = "\\{[\\s\\S\\d\\D\\n]*?}|ref"
+    val splitStr = "[^\\d\\w']+"
+    text.replaceAll(replaceStr, "").split(splitStr).groupBy(_.toLowerCase).map{case (word, qty) => (word, qty.length)}
   }
 }
